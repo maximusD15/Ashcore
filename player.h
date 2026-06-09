@@ -7,6 +7,7 @@ struct Player{
 	float speed;
 	float baseRadius;
 	float radius;
+	float angle;
 
 	bool isJumping;
 	float jumpTimer;
@@ -20,6 +21,14 @@ struct Player{
 	int attackCounter;
 	float attackCooldown;
 	float attackCooldownTimer;
+
+	int woodCount;
+	int stoneCount;
+
+	int axeTier;
+	int pickaxeTier;
+
+	int activeWeapon;
 };
 
 inline Player CreatePlayer(){
@@ -29,6 +38,7 @@ inline Player CreatePlayer(){
 	p.speed = p.baseSpeed;
     	p.baseRadius = 30.0f;
     	p.radius = p.baseRadius;
+	p.angle = 0.0f;
 
     	p.isJumping = false;
    	p.jumpTimer = 0.0f;
@@ -42,6 +52,12 @@ inline Player CreatePlayer(){
     	p.attackCounter = 0;
     	p.attackCooldown = 0.55f;
     	p.attackCooldownTimer = 0.0f;
+
+	p.woodCount = 0;
+	p.stoneCount = 0;
+	p.axeTier = 0;
+	p.pickaxeTier = 0;
+	p.activeWeapon = 0;
 
 	return p;
 }
