@@ -19,7 +19,7 @@ inline void UpdateGame(Player& p, Vector2& mapOffset,
     for(const auto& t : trees){
         float dx = t.worldPos.x - mapOffset.x;
         float dy = t.worldPos.y - mapOffset.y;
-        if(sqrt(dx*dx + dy*dy) < p.radius + t.radius){
+        if(sqrt(dx*dx + dy*dy) < p.radius + t.radius - 10.0f){
             mapOffset.x = oldOffsetX;
             break;
         }
@@ -27,7 +27,7 @@ inline void UpdateGame(Player& p, Vector2& mapOffset,
     for(const auto& r : rocks){
         float dx = r.worldPos.x - mapOffset.x;
         float dy = r.worldPos.y - mapOffset.y;
-        if(sqrt(dx*dx + dy*dy) < p.radius + r.radius){
+        if(sqrt(dx*dx + dy*dy) < p.radius + r.radius - 10.0f){
             mapOffset.x = oldOffsetX;
             break;
         }
@@ -60,7 +60,7 @@ inline void UpdateGame(Player& p, Vector2& mapOffset,
     if(IsKeyDown(KEY_SPACE) && !p.isJumping && p.cooldownTimer <= 0.0f){
         p.isJumping = true;
         p.jumpTimer = p.jumpDuration;
-        p.radius = p.baseRadius + 15.0f;
+        p.radius = p.baseRadius + 10.0f;
         p.speed = p.baseSpeed + 3.0f;
     }
 
@@ -76,28 +76,32 @@ inline void UpdateGame(Player& p, Vector2& mapOffset,
     else if(p.cooldownTimer > 0.0f) p.cooldownTimer -= deltaTime;
 
     if(p.attackCooldownTimer > 0.0f) p.attackCooldownTimer -= deltaTime;
+    if(p.dropPickupTimer > 0.0f) p.dropPickupTimer -= deltaTime;
 
     if(IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !p.isAttacking && p.attackCooldownTimer <= 0.0f){
         p.isAttacking = true;
         p.attackTimer = p.attackDuration;
         p.attackCooldownTimer = p.attackCooldown;
         p.attackCounter++;
+	p.dropPickupTimer = 0.25f;
 
         int damage = 1;
-        if(p.activeWeapon == 1) damage = p.axeTier * 2;
+        if(p.activeWeapon == 1) damage = p.axeTier * GetRandomValue(1, 3);
+	
+	Vector2 mousePos = GetMousePosition();
+	float attackAngle = atan2f(mousePos.y - p.screenCenter.y, mousePos.x - p.screenCenter.x);
 
-        Vector2 strikingHand = (p.attackCounter % 2 == 0) ? rightHandPos : leftHandPos;
-
-        Vector2 handWorldPos = {
-            strikingHand.x - p.screenCenter.x + mapOffset.x,
-            strikingHand.y - p.screenCenter.y + mapOffset.y
+	Vector2 hitWorldPos = {
+		mapOffset.x + cosf(attackAngle) * (p.radius + 35.0f),
+		mapOffset.y + sinf(attackAngle) * (p.radius + 35.0f)
         };
+
         for(size_t i = 0; i < trees.size(); i++){
-            float dx = trees[i].worldPos.x - handWorldPos.x;
-            float dy = trees[i].worldPos.y - handWorldPos.y;
+            float dx = trees[i].worldPos.x - hitWorldPos.x;
+            float dy = trees[i].worldPos.y - hitWorldPos.y;
             float dist = sqrtf(dx*dx + dy*dy);
 
-            if(dist < trees[i].radius + 10.0f){
+            if(dist < trees[i].radius + 40.0f){
                 trees[i].health -= damage;
 
 		float screenTreeX = trees[i].worldPos.x - mapOffset.x + p.screenCenter.x;
@@ -111,8 +115,14 @@ inline void UpdateGame(Player& p, Vector2& mapOffset,
                 drop.type = 1;
                 drop.radius = 15.0f;
 
-                drop.worldPos.x = trees[i].worldPos.x + (float)GetRandomValue(-120, 120);
-                drop.worldPos.y = trees[i].worldPos.y + (float)GetRandomValue(-120, 120);
+		float randomSpread = (GetRandomValue(-45, 45) * PI) / 180.0f;
+		float dropAngle = pushAngle + PI + randomSpread;
+
+                drop.worldPos.x = trees[i].worldPos.x - cosf(pushAngle) * trees[i].radius + cosf(dropAngle) * 35.0f;
+                drop.worldPos.y = trees[i].worldPos.y - sinf(pushAngle) * trees[i].radius + sinf(dropAngle) * 35.0f;
+
+		//drop.worldPos.x += cosf(dropAngle) * 25.0f;
+		//drop.worldPos.y += sinf(dropAngle) * 25.0f;
 
                 drops.push_back(drop);
                 break;
@@ -120,15 +130,15 @@ inline void UpdateGame(Player& p, Vector2& mapOffset,
         }
 
         int mineDamage = 0;
-        if(p.activeWeapon == 2) mineDamage = p.pickaxeTier * 2;
+        if(p.activeWeapon == 2) mineDamage = p.pickaxeTier * GetRandomValue(1, 3);
 
         if(mineDamage > 0){
             for(size_t i = 0; i < rocks.size(); i++){
-                float dx = rocks[i].worldPos.x - handWorldPos.x;
-                float dy = rocks[i].worldPos.y - handWorldPos.y;
+                float dx = rocks[i].worldPos.x - hitWorldPos.x;
+                float dy = rocks[i].worldPos.y - hitWorldPos.y;
                 float dist = sqrtf(dx*dx + dy*dy);
 
-                if(dist < rocks[i].radius + 10.0f){
+                if(dist < rocks[i].radius + 40.0f){
                     rocks[i].health -= mineDamage;
 
 		    float screenRockX = rocks[i].worldPos.x - mapOffset.x + p.screenCenter.x;
@@ -138,13 +148,18 @@ inline void UpdateGame(Player& p, Vector2& mapOffset,
 		    rocks[i].hitOffset.x = cosf(pushAngle) * 12.0f;
 		    rocks[i].hitOffset.y = sinf(pushAngle) * 12.0f;
 
-
                     ResourceDrop drop;
                     drop.type = 2;
                     drop.radius = 15.0f;
 
-                    drop.worldPos.x = rocks[i].worldPos.x + (float)GetRandomValue(-120, 120);
-                    drop.worldPos.y = rocks[i].worldPos.y + (float)GetRandomValue(-120, 120);
+		    float randomSpread = (GetRandomValue(-45, 45) * PI) / 180.0f;
+		    float dropAngle = pushAngle + PI + randomSpread;
+
+                    drop.worldPos.x = rocks[i].worldPos.x - cosf(pushAngle) * rocks[i].radius + cosf(dropAngle) * 35.0f;
+                    drop.worldPos.y = rocks[i].worldPos.y - sinf(pushAngle) * rocks[i].radius + sinf(dropAngle) * 35.0f;
+
+		    //drop.worldPos.x += cosf(dropAngle) * 25.0f;
+		    //drop.worldPos.y += sinf(dropAngle) * 25.0f;
 
                     drops.push_back(drop);
                     break;
@@ -191,30 +206,50 @@ inline void UpdateGame(Player& p, Vector2& mapOffset,
         }
     }
 
-    if(IsKeyPressed(KEY_THREE)){
-        p.activeWeapon = 0;
-    }
+    if(IsKeyPressed(KEY_THREE)) p.activeWeapon = 0;
 
     Vector2 mousePos = GetMousePosition();
     p.angle = atan2(mousePos.y - p.screenCenter.y, mousePos.x - p.screenCenter.x);
 
-    float leftHandOrbit = p.radius + 5.0f;
-    float rightHandOrbit = p.radius + 5.0f;
+    float leftHandOrbit = p.radius + 6.0f;
+    float rightHandOrbit = p.radius + 6.0f;
     float leftHandAngleOffset = 0.7f;
     float rightHandAngleOffset = 0.7f;
 
-    if(p.isAttacking){
-        p.attackTimer -= deltaTime;
-        if(p.attackTimer < 0.0f) p.isAttacking = false;
+    if(p.activeWeapon > 0){
+	    //leftHandAngleOffset = 0.7f;
+	    //leftHandOrbit = p.radius + 2.0f;
 
-        if(p.attackCounter % 2 == 0){
-            rightHandOrbit += 15.0f;
-            rightHandAngleOffset = 0.2f;
-        }
-        else{
-            leftHandOrbit += 15.0f;
-            leftHandAngleOffset = 0.2f;
-        }
+    		if(p.isAttacking){
+        		p.attackTimer -= deltaTime;
+        		if(p.attackTimer < 0.0f) p.isAttacking = false;
+
+			float progress = p.attackTimer / p.attackDuration;
+			float strikeFactor = sinf(progress * PI);
+
+			rightHandOrbit += strikeFactor * 22.0f;
+			rightHandAngleOffset -= strikeFactor * 0.2f;
+
+			leftHandOrbit -= strikeFactor * 8.0f;
+			leftHandAngleOffset += strikeFactor * 0.3f;
+		}
+    }
+    else{
+		if(p.isAttacking){
+		    	p.attackTimer -= deltaTime;
+			if(p.attackTimer < 0.0f) p.isAttacking = false;
+
+		    	float progress = p.attackTimer / p.attackDuration;
+            		if(p.attackCounter % 2 == 0){
+                	rightHandOrbit += sinf(progress * PI) * 15.0f;
+                	rightHandAngleOffset += cosf(progress * PI) * 15.0f;
+            		}
+            	    
+			else{
+                	leftHandOrbit += sinf(progress * PI) * 15.0f;
+                	leftHandAngleOffset += cosf(progress * PI) * 15.0f;
+			}
+		}
     }
 
     leftHandPos = {
@@ -259,10 +294,22 @@ inline void UpdateGame(Player& p, Vector2& mapOffset,
         float dy = it->worldPos.y - mapOffset.y;
         float dist = sqrtf(dx*dx + dy*dy);
 
-        if(dist < p.radius + it->radius){
-            if(it->type == 1) p.woodCount++;
-            if(it->type == 2) p.stoneCount++;
-            
+        if(p.dropPickupTimer <= 0.0f && dist < (p.radius + it->radius + 5.0f)){
+            if(it->type == 1){
+		    if(p.activeWeapon == 1){
+		    	    if(p.axeTier == 1) p.woodCount = p.woodCount + GetRandomValue(1, 3);
+		    	    else if(p.axeTier == 2) p.woodCount = p.woodCount + GetRandomValue(2, 3);
+		    }
+		    else p.woodCount++;
+	    }
+            if(it->type == 2){
+		    if(p.activeWeapon == 2){
+		    	    if(p.pickaxeTier == 1) p.stoneCount = p.stoneCount + GetRandomValue(1, 2);
+		            else if(p.pickaxeTier == 2) p.stoneCount = p.stoneCount + GetRandomValue(1, 3);
+		    }
+		    else p.stoneCount++;
+	    }
+
             it = drops.erase(it);
         }
         else ++it;

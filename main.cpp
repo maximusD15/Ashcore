@@ -109,46 +109,35 @@ int main(){
 		DrawCircleV(rightHandPos, handRadius + 2, BLACK);
 		DrawCircleV(rightHandPos, handRadius, GetColor(0xDF9B7FFF));
 
-		Vector2 weaponPos = rightHandPos;
-
 		float weaponAngleDegrees = (player.angle * (180.0f / PI)) - 90.0f;
-
-		if(player.activeWeapon == 1){
-			DrawRectanglePro(
-				Rectangle{ weaponPos.x, weaponPos.y, 35.0f, 6.0f },
-				Vector2{ 0.0f, 3.0f},
-				weaponAngleDegrees,
-				BROWN
-			);
-				
-			Color axeColor = (player.axeTier == 2) ? DARKGRAY : BROWN;
-			DrawRectanglePro(
-        			Rectangle{ weaponPos.x, weaponPos.y, 16.0f, 10.0f },
-        			Vector2{ -35.0f, -10.0f },
-        			weaponAngleDegrees, 
-        			axeColor
-    			);
-		}	
-		else if (player.activeWeapon == 2) {
-    			DrawRectanglePro(
-        			Rectangle{ weaponPos.x, weaponPos.y, 35.0f, 6.0f },
-       				Vector2{ 0.0f, 3.0f }, 
-       				weaponAngleDegrees, 
-        			BROWN
-    			);
-    
-    				Color pickColor = (player.pickaxeTier == 2) ? DARKGRAY : BROWN; 
-    			DrawRectanglePro(
-        			Rectangle{ weaponPos.x, weaponPos.y, 6.0f, 28.0f },
-        			Vector2{ -35.0f, -14.0f },
-        			weaponAngleDegrees, 
-        			pickColor
-    			);
-		}
-
 
 		DrawCircleV(player.screenCenter, player.radius + 3, BLACK);
 		DrawCircleV(player.screenCenter, player.radius, GetColor(0xDF9B7FFF));
+
+		DrawCircleV(leftHandPos, handRadius + 2, BLACK);
+		DrawCircleV(leftHandPos, handRadius, GetColor(0xDF9B7FFF));
+		DrawCircleV(rightHandPos, handRadius + 2, BLACK);
+		DrawCircleV(rightHandPos, handRadius, GetColor(0xDF9B7FFF));
+       		
+		if (player.activeWeapon > 0) {
+            		Vector2 weaponPos = rightHandPos;
+
+            		float currentWeaponAngle = atan2f(weaponPos.y - player.screenCenter.y, weaponPos.x - player.screenCenter.x);
+            		float weaponAngleDegrees = (currentWeaponAngle * (180.0f / PI)) + 50.0f; // Сдвиг угла для правильного хвата
+
+            	if(player.activeWeapon == 1){
+                	DrawRectanglePro(Rectangle{ weaponPos.x, weaponPos.y, 70.0f, 6.0f }, Vector2{ 50.0f, 3.0f }, weaponAngleDegrees, BROWN);
+                	Color axeColor = (player.axeTier == 2) ? DARKGRAY : BROWN;
+                	DrawRectanglePro(Rectangle{ weaponPos.x, weaponPos.y, 18.0f, 14.0f }, Vector2{ -20.0f, 10.0f }, weaponAngleDegrees, axeColor);
+            	}    
+            	else if (player.activeWeapon == 2) {
+                	DrawRectanglePro(Rectangle{ weaponPos.x, weaponPos.y, 70.0f, 6.0f }, Vector2{ 50.0f, 3.0f }, weaponAngleDegrees, BROWN);
+                	Color pickColor = (player.pickaxeTier == 2) ? DARKGRAY : BROWN;
+                	DrawRectanglePro(Rectangle{ weaponPos.x, weaponPos.y, 6.0f, 30.0f }, Vector2{ -20.0f, 15.0f }, weaponAngleDegrees, pickColor);
+            		}
+        	}
+
+
 
         	DrawText(TextFormat("WOOD: %d", player.woodCount), 20, 20, 30, WHITE);
         	DrawText(TextFormat("STONE: %d", player.stoneCount), 20, 60, 30, WHITE);

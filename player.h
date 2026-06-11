@@ -29,6 +29,8 @@ struct Player{
 	int pickaxeTier;
 
 	int activeWeapon;
+
+	float dropPickupTimer;
 };
 
 inline Player CreatePlayer(){
@@ -53,11 +55,12 @@ inline Player CreatePlayer(){
     	p.attackCooldown = 0.55f;
     	p.attackCooldownTimer = 0.0f;
 
-	p.woodCount = 0;
+	p.woodCount = 10;
 	p.stoneCount = 0;
 	p.axeTier = 0;
 	p.pickaxeTier = 0;
 	p.activeWeapon = 0;
+	p.dropPickupTimer = 0.0f;
 
 	return p;
 }
