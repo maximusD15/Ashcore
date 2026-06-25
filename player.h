@@ -1,67 +1,80 @@
 #pragma once
 #include <raylib.h>
 
-struct Player{
-	Vector2 screenCenter;
-	float baseSpeed;
-	float speed;
-	float baseRadius;
-	float radius;
-	float angle;
+class Player {
+private:
+    Vector2 screenCenter;
+    float baseSpeed;
+    float speed;
+    float baseRadius;
+    float radius;
+    float angle;
 
-	bool isJumping;
-	float jumpTimer;
-	float jumpDuration;
-	float jumpCooldown;
-	float cooldownTimer;
+    int health;
+    int maxHealth;
+    float stamina;
+    float maxStamina;
+    float hpRegenTimer;
 
-	bool isAttacking;
-	float attackTimer;
-	float attackDuration;
-	int attackCounter;
-	float attackCooldown;
-	float attackCooldownTimer;
+    bool isJumping;
+    float jumpTimer;
+    float jumpDuration;
+    float jumpCooldown;
+    float cooldownTimer;
 
-	int woodCount;
-	int stoneCount;
+    bool isAttacking;
+    float attackTimer;
+    float attackDuration;
+    int attackCounter;
+    float attackCooldown;
+    float attackCooldownTimer;
 
-	int axeTier;
-	int pickaxeTier;
+    int woodCount;
+    int stoneCount;
+    int axeTier;
+    int pickaxeTier;
+    int activeWeapon;
 
-	int activeWeapon;
+    float dropPickupTimer;
 
-	float dropPickupTimer;
+public:
+    Player();
+
+    void HandleMovement(float deltaTime);
+    void Update(float deltaTime);
+    void HandleInput();
+
+    Vector2 GetScreenCenter() const { return screenCenter; }
+    float GetRadius() const { return radius; }
+    float GetAngle() const { return angle; }
+    float GetSpeed() const { return speed; }
+    int GetHealth() const { return health; }
+    int GetMaxHealth() const { return maxHealth; }
+    float GetStamina() const { return stamina; }
+    float GetMaxStamina() const { return maxStamina; }
+    bool IsAttacking() const { return isAttacking; }
+    bool IsJumping() const { return isJumping; }
+    float GetJumpTimer() const { return jumpTimer; }
+    float GetJumpDuration() const { return jumpDuration; }
+    float GetAttackCooldownTimer() const { return attackCooldownTimer; }
+    int GetAttackCounter() const { return attackCounter; }
+    int GetActiveWeapon() const { return activeWeapon; }
+    int GetAxeTier() const { return axeTier; }
+    int GetPickaxeTier() const { return pickaxeTier; }
+    int GetWoodCount() const { return woodCount; }
+    int GetStoneCount() const { return stoneCount; }
+    float GetDropPickupTimer() const { return dropPickupTimer; }
+
+    void TakeDamage(int amount)
+    {
+        health -= amount;
+        if (health < 0)
+            health = 0;
+    }
+
+    void AddWood(int count) { woodCount += count; }
+    void AddStone(int count) { stoneCount += count; }
+    void ResetDropPickupTimer(float time) { dropPickupTimer = time; }
+
+    void TriggerAttack();
 };
-
-inline Player CreatePlayer(){
-	Player p;
-	p.screenCenter = { (float)SCREEN_W / 2.0f, (float)SCREEN_H / 2.0f };
-	p.baseSpeed = 5.0f;
-	p.speed = p.baseSpeed;
-    	p.baseRadius = 30.0f;
-    	p.radius = p.baseRadius;
-	p.angle = 0.0f;
-
-    	p.isJumping = false;
-   	p.jumpTimer = 0.0f;
-    	p.jumpDuration = 0.3f;
-   	p.jumpCooldown = 0.5f;
-    	p.cooldownTimer = 0.0f;
-
-    	p.isAttacking = false;
-    	p.attackTimer = 0.0f;
-    	p.attackDuration = 0.3f;
-    	p.attackCounter = 0;
-    	p.attackCooldown = 0.55f;
-    	p.attackCooldownTimer = 0.0f;
-
-	p.woodCount = 10;
-	p.stoneCount = 0;
-	p.axeTier = 0;
-	p.pickaxeTier = 0;
-	p.activeWeapon = 0;
-	p.dropPickupTimer = 0.0f;
-
-	return p;
-}
-
