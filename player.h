@@ -6,6 +6,7 @@ private:
     Vector2 screenCenter;
     float baseSpeed;
     float speed;
+    Vector2 velocity;
     float baseRadius;
     float radius;
     float angle;
@@ -31,6 +32,7 @@ private:
 
     int woodCount;
     int stoneCount;
+    int goldCount;
     int axeTier;
     int pickaxeTier;
     int activeWeapon;
@@ -48,6 +50,7 @@ public:
     float GetRadius() const { return radius; }
     float GetAngle() const { return angle; }
     float GetSpeed() const { return speed; }
+    Vector2& GetVelocity() { return velocity; }
     int GetHealth() const { return health; }
     int GetMaxHealth() const { return maxHealth; }
     float GetStamina() const { return stamina; }
@@ -63,6 +66,7 @@ public:
     int GetPickaxeTier() const { return pickaxeTier; }
     int GetWoodCount() const { return woodCount; }
     int GetStoneCount() const { return stoneCount; }
+    int GetGoldCount() const { return goldCount; }
     float GetDropPickupTimer() const { return dropPickupTimer; }
 
     void TakeDamage(int amount)
@@ -74,6 +78,7 @@ public:
 
     void AddWood(int count) { woodCount += count; }
     void AddStone(int count) { stoneCount += count; }
+    void AddGold(int count) { goldCount += count; }
     void ResetDropPickupTimer(float time) { dropPickupTimer = time; }
 
     void TriggerAttack();

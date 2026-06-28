@@ -22,7 +22,7 @@ int main()
     mapOffset.y = sinf(spawnAngle) * spawnRadius;
 
     Vector2 leftHandPos = { 0 }, rightHandPos = { 0 };
-    float handRadius; // = 8.0f;
+    float handRadius;
 
     SetTargetFPS(60);
 
@@ -34,8 +34,9 @@ int main()
         BeginDrawing();
         ClearBackground(BLACK);
 
-        renderer.DrawWorld(world, player, mapOffset);
+	renderer.DrawWorld(world, player, mapOffset);
         renderer.DrawPlayer(player, leftHandPos, rightHandPos, handRadius);
+	renderer.DrawStructures(world, player, mapOffset);
         renderer.DrawUI(player);
 
         EndDrawing();

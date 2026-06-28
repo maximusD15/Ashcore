@@ -7,6 +7,7 @@ Player::Player(){
     screenCenter = { (float)SCREEN_W / 2.0f, (float)SCREEN_H / 2.0f };
     baseSpeed = 350.0f;
     speed = baseSpeed;
+    velocity = { 0.0f, 0.0f };
     baseRadius = 30.0f;
     radius = baseRadius;
     angle = 0.0f;
@@ -32,6 +33,7 @@ Player::Player(){
 
     woodCount = 0;
     stoneCount = 0;
+    goldCount = 0;
     axeTier = 0;
     pickaxeTier = 0;
     activeWeapon = 0;
@@ -44,12 +46,11 @@ void Player::HandleMovement(float deltaTime){
     if(isJumping){
 	   jumpTimer -= deltaTime;
 	   float progress = jumpTimer / jumpDuration; 
-	   radius = baseRadius + sinf(progress * PI) * 8.0f;
+	   radius = baseRadius + sinf(progress * PI) * 6.0f;
 
         if(jumpTimer <= 0.0f){
 		isJumping = false;
         	radius = baseRadius;
-        	speed = baseSpeed;
 		cooldownTimer = jumpCooldown;
         }
     }
@@ -114,6 +115,15 @@ void Player::HandleInput(){
 		      	      }
 		      else activeWeapon = 1;
 		      }
+	      else if(axeTier == 2){
+		      if(woodCount >= 10 && goldCount >= 15){
+			      woodCount -= 15;
+			      goldCount -= 15;
+			      axeTier = 3;
+			      activeWeapon = 1;
+		      }
+		      else activeWeapon = 1;
+	      }
               else if(axeTier > 1){
             activeWeapon = 1;
         }
@@ -141,6 +151,17 @@ void Player::HandleInput(){
                 activeWeapon = 2;
             }
         }
+	else if(pickaxeTier == 2){
+		if(woodCount >= 10 && goldCount >= 15){
+			woodCount -= 10;
+			goldCount -= 15;
+			pickaxeTier = 3;
+			activeWeapon = 2;
+		}
+		else{
+			activeWeapon = 2;
+		}
+	}
         else if(pickaxeTier > 1){
             activeWeapon = 2;
         }
@@ -157,7 +178,16 @@ void Player::HandleInput(){
         	stamina -= JUMP_STAMINA_COST; 
         	isJumping = true;
         	jumpTimer = jumpDuration;
-        	speed = baseSpeed + 200.0f;
+
+		float velLength = sqrtf(velocity.x * velocity.x + velocity.y * velocity.y);
+		if(velLength > 0.01){
+			float dirX = velocity.x / velLength;
+			float dirY = velocity.y / velLength;
+
+			float jumpPush = 500.0f;
+			velocity.x = dirX * jumpPush;
+			velocity.y = dirY * jumpPush;
+		}
 		}
 	else{
 	}

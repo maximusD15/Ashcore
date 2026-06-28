@@ -24,7 +24,10 @@ void Renderer::DrawWorld(const World& world, const Player& player, const Vector2
             DrawRectangle(screenX, screenY, blade.size, blade.size, GetColor(0x38532BFF));
         }
     }
+}
 
+void Renderer::DrawStructures(const World& world, const Player& player, const Vector2& mapOffset)
+{
     for (const auto& r : world.rocks) {
         float screenX = r.worldPos.x - mapOffset.x + player.GetScreenCenter().x + r.hitOffset.x;
         float screenY = r.worldPos.y - mapOffset.y + player.GetScreenCenter().y + r.hitOffset.y;
@@ -32,6 +35,15 @@ void Renderer::DrawWorld(const World& world, const Player& player, const Vector2
             DrawCircleV({ screenX, screenY }, r.radius + 3, BLACK);
             DrawCircleV({ screenX, screenY }, r.radius, GetColor(0x7A7A7AFF));
         }
+    }
+    
+    for(const auto& g : world.golds){
+	    float screenX = g.worldPos.x - mapOffset.x + player.GetScreenCenter().x + g.hitOffset.x;
+	    float screenY = g.worldPos.y - mapOffset.y + player.GetScreenCenter().y + g.hitOffset.y;
+	    if(screenX >= -100 && screenX <= SCREEN_W + 100 && screenY >= -100 && screenY <= SCREEN_H + 100){
+		    DrawCircleV({ screenX, screenY}, g.radius + 3, BLACK);
+		    DrawCircleV({ screenX, screenY}, g.radius, GetColor(0xFFD700FF));
+	    }
     }
 
     for (const auto& t : world.trees) {
@@ -47,7 +59,10 @@ void Renderer::DrawWorld(const World& world, const Player& player, const Vector2
         float screenX = d.worldPos.x - mapOffset.x + player.GetScreenCenter().x;
         float screenY = d.worldPos.y - mapOffset.y + player.GetScreenCenter().y;
         if (screenX >= -50 && screenX <= SCREEN_W + 50 && screenY >= -50 && screenY <= SCREEN_H + 50) {
-            Color dropColor = (d.type == 1) ? BROWN : GRAY;
+            Color dropColor;
+	    if(d.type == 1) dropColor = BROWN;
+	    if(d.type == 2) dropColor = GRAY;
+	    if(d.type == 3) dropColor = GOLD;
             DrawCircleV({ screenX, screenY }, d.radius, dropColor);
             DrawCircleV({ screenX, screenY }, d.radius, ColorAlpha(BLACK, 0.3f));
         }
@@ -63,11 +78,17 @@ void Renderer::DrawPlayer(const Player& player, const Vector2& leftHandPos, cons
 
         if (player.GetActiveWeapon() == 1) {
             DrawRectanglePro(Rectangle { weaponPos.x, weaponPos.y, 70.0f, 6.0f }, Vector2 { 50.0f, 3.0f }, weaponAngleDegrees, BROWN);
-            Color axeColor = (player.GetAxeTier() == 2) ? DARKGRAY : BROWN;
+	    Color axeColor;
+	    if(player.GetAxeTier() == 1) axeColor = BROWN;
+	    if(player.GetAxeTier() == 2) axeColor = DARKGRAY;
+	    if(player.GetAxeTier() == 3) axeColor = YELLOW;
             DrawRectanglePro(Rectangle { weaponPos.x, weaponPos.y, 18.0f, 14.0f }, Vector2 { -20.0f, 10.0f }, weaponAngleDegrees, axeColor);
         } else if (player.GetActiveWeapon() == 2) {
             DrawRectanglePro(Rectangle { weaponPos.x, weaponPos.y, 70.0f, 6.0f }, Vector2 { 50.0f, 3.0f }, weaponAngleDegrees, BROWN);
-            Color pickColor = (player.GetPickaxeTier() == 2) ? DARKGRAY : BROWN;
+	    Color pickColor;
+	    if(player.GetPickaxeTier() == 1) pickColor = BROWN;
+	    if(player.GetPickaxeTier() == 2) pickColor = DARKGRAY;
+	    if(player.GetPickaxeTier() == 3) pickColor = YELLOW;
             DrawRectanglePro(Rectangle { weaponPos.x, weaponPos.y, 6.0f, 30.0f }, Vector2 { -20.0f, 15.0f }, weaponAngleDegrees, pickColor);
         }
     }
@@ -83,13 +104,14 @@ void Renderer::DrawPlayer(const Player& player, const Vector2& leftHandPos, cons
 
 void Renderer::DrawUI(const Player& player)
 {
-    DrawText(TextFormat("WOOD: %d", player.GetWoodCount()), 20, 20, 30, WHITE);
-    DrawText(TextFormat("STONE: %d", player.GetStoneCount()), 20, 60, 30, WHITE);
+    DrawText(TextFormat("WOOD %d", player.GetWoodCount()), SCREEN_W - 1900, SCREEN_H - 50, 30, WHITE);
+    DrawText(TextFormat("STONE %d", player.GetStoneCount()), SCREEN_W - 1900, SCREEN_H - 100, 30, WHITE);
+    DrawText(TextFormat("GOLD %d", player.GetGoldCount()), SCREEN_W - 1900, SCREEN_H - 150, 30, WHITE);
 
-    DrawText(TextFormat("WEAPON: %s (Tier %d)",
+    DrawText(TextFormat("WEAPON: %s (TIER %d)",
                  player.GetActiveWeapon() == 0 ? "Fists" : (player.GetActiveWeapon() == 1 ? "Axe" : "Pickaxe"),
                  player.GetActiveWeapon() == 1 ? player.GetAxeTier() : (player.GetActiveWeapon() == 2 ? player.GetPickaxeTier() : 0)),
-        20, 100, 20, GRAY);
+        SCREEN_W - 1080, SCREEN_H - 50, 20, WHITE);
 
     float barWidth = 100.0f;
     float barHeight = 7.5f;

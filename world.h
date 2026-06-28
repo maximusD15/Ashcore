@@ -11,7 +11,9 @@ struct GrassBlade {
 
 struct Tree {
     Vector2 worldPos;
+    float maxRadius;
     float radius;
+    float targetRadius;
     int health;
     int maxHealth;
     Vector2 hitOffset = { 0.0f, 0.0f };
@@ -19,10 +21,22 @@ struct Tree {
 
 struct Rock {
     Vector2 worldPos;
+    float maxRadius;
     float radius;
+    float targetRadius;
     int health;
     int maxHealth;
     Vector2 hitOffset = { 0.0f, 0.0f };
+};
+
+struct Gold {
+	Vector2 worldPos;
+	float maxRadius;
+	float radius;
+	float targetRadius;
+	int health;
+	int maxHealth;
+	Vector2 hitOffset = { 0.0f, 0.0f };
 };
 
 struct ResourceDrop {
@@ -45,6 +59,7 @@ public:
     std::vector<GrassBlade> grassTiles;
     std::vector<Tree> trees;
     std::vector<Rock> rocks;
+    std::vector<Gold> golds;
     std::vector<ResourceDrop> drops;
 
     void Init();
