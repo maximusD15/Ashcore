@@ -16,6 +16,8 @@ private:
     float stamina;
     float maxStamina;
     float hpRegenTimer;
+    float IFrames;
+    const float IFRAMES_DURATION = 0.5f;
 
     bool isJumping;
     float jumpTimer;
@@ -36,7 +38,7 @@ private:
     int axeTier;
     int pickaxeTier;
     int activeWeapon;
-
+    int selectedSlot;
     float dropPickupTimer;
 
 public:
@@ -44,6 +46,7 @@ public:
 
     void HandleMovement(float deltaTime);
     void Update(float deltaTime);
+    void TakeDamage(int am2ount);
     void HandleInput();
 
     Vector2 GetScreenCenter() const { return screenCenter; }
@@ -55,6 +58,7 @@ public:
     int GetMaxHealth() const { return maxHealth; }
     float GetStamina() const { return stamina; }
     float GetMaxStamina() const { return maxStamina; }
+    float GetIFrames() const { return IFrames; }
     bool IsAttacking() const { return isAttacking; }
     bool IsJumping() const { return isJumping; }
     float GetJumpTimer() const { return jumpTimer; }
@@ -68,18 +72,26 @@ public:
     int GetStoneCount() const { return stoneCount; }
     int GetGoldCount() const { return goldCount; }
     float GetDropPickupTimer() const { return dropPickupTimer; }
+    int GetSelectedSlot() const { return selectedSlot; }
 
-    void TakeDamage(int amount)
-    {
-        health -= amount;
-        if (health < 0)
-            health = 0;
-    }
+    /* void TakeDamage(int amount)
+     {
+             if(IFrames > 0.0f) return;
+
+         health -= amount;
+         if(health < 0) health = 0;
+
+         IFrames = IFRAMES_DURATION;
+
+
+     }*/
 
     void AddWood(int count) { woodCount += count; }
     void AddStone(int count) { stoneCount += count; }
     void AddGold(int count) { goldCount += count; }
     void ResetDropPickupTimer(float time) { dropPickupTimer = time; }
+
+    void ResetPlayerStates();
 
     void TriggerAttack();
 };

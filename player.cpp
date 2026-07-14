@@ -1,9 +1,10 @@
-#include <cmath>
-#include "common.h"
 #include "player.h"
+#include "common.h"
 #include "world.h"
+#include <cmath>
 
-Player::Player(){
+Player::Player()
+{
     screenCenter = { (float)SCREEN_W / 2.0f, (float)SCREEN_H / 2.0f };
     baseSpeed = 350.0f;
     speed = baseSpeed;
@@ -17,6 +18,7 @@ Player::Player(){
     stamina = 200.0f;
     maxStamina = 200.0f;
     hpRegenTimer = 5;
+    IFrames = 0.0f;
 
     isJumping = false;
     jumpTimer = 0.0f;
@@ -37,160 +39,197 @@ Player::Player(){
     axeTier = 0;
     pickaxeTier = 0;
     activeWeapon = 0;
+    selectedSlot = 0;
     dropPickupTimer = 0.0f;
 }
 
-void Player::HandleMovement(float deltaTime){
-    if(cooldownTimer > 0.0f) cooldownTimer -= deltaTime;
+void Player::HandleMovement(float deltaTime)
+{
+    if (cooldownTimer > 0.0f)
+        cooldownTimer -= deltaTime;
 
-    if(isJumping){
-	   jumpTimer -= deltaTime;
-	   float progress = jumpTimer / jumpDuration; 
-	   radius = baseRadius + sinf(progress * PI) * 6.0f;
+    if (isJumping) {
+        jumpTimer -= deltaTime;
+        float progress = jumpTimer / jumpDuration;
+        radius = baseRadius + sinf(progress * PI) * 6.0f;
 
-        if(jumpTimer <= 0.0f){
-		isJumping = false;
-        	radius = baseRadius;
-		cooldownTimer = jumpCooldown;
+        if (jumpTimer <= 0.0f) {
+            isJumping = false;
+            radius = baseRadius;
+            cooldownTimer = jumpCooldown;
         }
     }
 }
 
-void Player::Update(float deltaTime){
+void Player::Update(float deltaTime)
+{
     Vector2 mousePos = GetMousePosition();
     angle = atan2f(mousePos.y - screenCenter.y, mousePos.x - screenCenter.x);
 
-    if(attackCooldownTimer > 0.0f) attackCooldownTimer -= deltaTime;
-    if(dropPickupTimer > 0.0f) dropPickupTimer -= deltaTime;
+    if (attackCooldownTimer > 0.0f)
+        attackCooldownTimer -= deltaTime;
+    if (dropPickupTimer > 0.0f)
+        dropPickupTimer -= deltaTime;
 
-    if(isAttacking){
-            attackTimer -= deltaTime;
-            if(attackTimer < 0.0f) isAttacking = false;
-    	    }
-
-    if(stamina < maxStamina){
-	    stamina += 20.0f * deltaTime;
-	    if(stamina > maxStamina) stamina = maxStamina;
-   	    }
-    
-    if(health < maxHealth){
-	    hpRegenTimer += deltaTime;
-	    if(hpRegenTimer >= 2.0f){
-		    health += 1;
-		    hpRegenTimer = 0.0f;
-	    	    }
-    	    }
+    if (isAttacking) {
+        attackTimer -= deltaTime;
+        if (attackTimer < 0.0f)
+            isAttacking = false;
     }
 
-void Player::TriggerAttack(){
-       if(!isAttacking && attackCooldownTimer <= 0.0f){
-           isAttacking = true;
-           attackTimer = attackDuration;
-           attackCooldownTimer = attackCooldown;
-           dropPickupTimer = 0.25f;
+    if (stamina < maxStamina) {
+        stamina += 20.0f * deltaTime;
+        if (stamina > maxStamina)
+            stamina = maxStamina;
+    }
 
-
-    	   if (activeWeapon > 0) attackCounter = 1; 
-           else attackCounter = (attackCounter == 0) ? 1 : 0;
-    	   }
-       }
-
-void Player::HandleInput(){
-       if(IsKeyPressed(KEY_ONE)){
-              if(axeTier == 0){
-            	      if(woodCount >= 10){
-                      	      woodCount -= 10;
-                    	      axeTier = 1;
-                	      activeWeapon = 1;
-            		      }
-            	      else activeWeapon = 0;
-        	      }
-
-              else if(axeTier == 1){
-            	      if(woodCount >= 10 && stoneCount >= 15){
-                	      woodCount -= 10;
-                	      stoneCount -= 15;
-                	      axeTier = 2;
-                	      activeWeapon = 1;
-		      	      }
-		      else activeWeapon = 1;
-		      }
-	      else if(axeTier == 2){
-		      if(woodCount >= 10 && goldCount >= 15){
-			      woodCount -= 15;
-			      goldCount -= 15;
-			      axeTier = 3;
-			      activeWeapon = 1;
-		      }
-		      else activeWeapon = 1;
-	      }
-              else if(axeTier > 1){
-            activeWeapon = 1;
+    if (health < maxHealth) {
+        hpRegenTimer += deltaTime;
+        if (hpRegenTimer >= 2.0f) {
+            health += 1;
+            hpRegenTimer = 0.0f;
         }
     }
 
-    if(IsKeyPressed(KEY_TWO)){
-        if(pickaxeTier == 0){
-            if(woodCount >= 10){
+    if (IFrames > 0.0f) {
+        IFrames -= deltaTime;
+    }
+}
+
+void Player::TriggerAttack()
+{
+    if (!isAttacking && attackCooldownTimer <= 0.0f) {
+        isAttacking = true;
+        attackTimer = attackDuration;
+        attackCooldownTimer = attackCooldown;
+        dropPickupTimer = 0.25f;
+
+        if (activeWeapon > 0)
+            attackCounter = 1;
+        else
+            attackCounter = (attackCounter == 0) ? 1 : 0;
+    }
+}
+
+void Player::HandleInput()
+{
+    if (IsKeyPressed(KEY_ONE))
+        selectedSlot = 0;
+    if (IsKeyPressed(KEY_TWO))
+        selectedSlot = 1;
+    if (IsKeyPressed(KEY_THREE))
+        selectedSlot = 2;
+    if (IsKeyPressed(KEY_FOUR))
+        selectedSlot = 3;
+    if (IsKeyPressed(KEY_FIVE))
+        selectedSlot = 4;
+
+    if (selectedSlot == 0)
+        activeWeapon = (axeTier > 0) ? 1 : 0;
+    else if (selectedSlot == 1)
+        activeWeapon = (pickaxeTier > 0) ? 2 : 0;
+    else
+        activeWeapon = 0;
+
+    if (IsKeyPressed(KEY_E)) {
+        if (selectedSlot == 0) {
+            if (axeTier == 0 && woodCount >= 10) {
+                woodCount -= 10;
+                axeTier = 1;
+                activeWeapon = 1;
+            } else if (axeTier == 1 && woodCount >= 10 && stoneCount >= 15) {
+                woodCount -= 10;
+                stoneCount -= 15;
+                axeTier = 2;
+                activeWeapon = 1;
+            } else if (axeTier == 2 && woodCount >= 10 && goldCount >= 15) {
+                woodCount -= 15;
+                goldCount -= 15;
+                axeTier = 3;
+                activeWeapon = 1;
+            }
+        } else if (selectedSlot == 1) {
+            if (pickaxeTier == 0 && woodCount >= 10) {
                 woodCount -= 10;
                 pickaxeTier = 1;
                 activeWeapon = 2;
-            }
-            else {
-                activeWeapon = 0;
-            }
-        }
-        else if(pickaxeTier == 1){
-            if(woodCount >= 10 && stoneCount >= 15){
+            } else if (pickaxeTier == 1 && woodCount >= 10 && stoneCount >= 15) {
                 woodCount -= 10;
                 stoneCount -= 15;
                 pickaxeTier = 2;
                 activeWeapon = 2;
-            }
-            else {
+            } else if (pickaxeTier == 2 && woodCount >= 10 && goldCount >= 15) {
+                woodCount -= 10;
+                goldCount -= 15;
+                pickaxeTier = 3;
                 activeWeapon = 2;
             }
         }
-	else if(pickaxeTier == 2){
-		if(woodCount >= 10 && goldCount >= 15){
-			woodCount -= 10;
-			goldCount -= 15;
-			pickaxeTier = 3;
-			activeWeapon = 2;
-		}
-		else{
-			activeWeapon = 2;
-		}
-	}
-        else if(pickaxeTier > 1){
-            activeWeapon = 2;
-        }
-    }
-
-    if(IsKeyPressed(KEY_THREE)){
-        activeWeapon = 0;
     }
 
     const float JUMP_STAMINA_COST = 50.0f;
 
-    if (IsKeyDown(KEY_SPACE) && !isJumping && cooldownTimer <= 0.0f){
-	if (stamina >= JUMP_STAMINA_COST) {
-        	stamina -= JUMP_STAMINA_COST; 
-        	isJumping = true;
-        	jumpTimer = jumpDuration;
+    if (IsKeyDown(KEY_SPACE) && !isJumping && cooldownTimer <= 0.0f) {
+        if (stamina >= JUMP_STAMINA_COST) {
+            stamina -= JUMP_STAMINA_COST;
+            isJumping = true;
+            jumpTimer = jumpDuration;
 
-		float velLength = sqrtf(velocity.x * velocity.x + velocity.y * velocity.y);
-		if(velLength > 0.01){
-			float dirX = velocity.x / velLength;
-			float dirY = velocity.y / velLength;
+            float velLength = sqrtf(velocity.x * velocity.x + velocity.y * velocity.y);
+            if (velLength > 0.01) {
+                float dirX = velocity.x / velLength;
+                float dirY = velocity.y / velLength;
 
-			float jumpPush = 500.0f;
-			velocity.x = dirX * jumpPush;
-			velocity.y = dirY * jumpPush;
-		}
-		}
-	else{
-	}
+                float jumpPush = 500.0f;
+                velocity.x = dirX * jumpPush;
+                velocity.y = dirY * jumpPush;
+            }
+        } else {
+        }
     }
 }
 
+void Player::TakeDamage(int amount)
+{
+
+    if (IFrames > 0.0f)
+        return;
+
+    health -= amount;
+    if (health < 0)
+        health = 0;
+
+    IFrames = IFRAMES_DURATION;
+}
+
+void Player::ResetPlayerStates()
+{
+    health = maxHealth;
+    stamina = maxStamina;
+    hpRegenTimer = 0.0f;
+    IFrames = 0.0f;
+
+    speed = baseSpeed;
+    velocity = { 0.0f, 0.0f };
+    radius = baseRadius;
+    angle = 0.0f;
+
+    isJumping = false;
+    jumpTimer = 0.0f;
+    cooldownTimer = 0.0f;
+
+    isAttacking = false;
+    attackTimer = 0.0f;
+    attackCounter = 0;
+    attackCooldownTimer = 0.0f;
+
+    woodCount = 0;
+    stoneCount = 0;
+    goldCount = 0;
+
+    axeTier = 0;
+    pickaxeTier = 0;
+    activeWeapon = 0;
+    selectedSlot = 0;
+    dropPickupTimer = 0.0f;
+}
